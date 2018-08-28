@@ -30,15 +30,27 @@ class AuthController extends Controller
 		 $validator = Validator::make($request->all(), [
 		 	'name' => 'required|string|unique:users',
             'email' => 'required|email|unique:users',	
-            'password' => 'required|string|min:6|max:10'
+            'password' => 'required|string|min:6|max:10',
+			'id' => 'required|string|unique:users',
+			'firstName' => 'required|string',
+			'lastName'  => 'required|string',
+			//'role'
+			'phone' => 'required|string',
+			'cellphone' => 'required|string',
+			'birthDate' => 'required|string',
+			'city' => 'required|string',
+			'status' => 'required|string',
+			'address' => 'required|string',
+			//'country'
         ]);
 
         if ($validator->fails()) {
            return response([
 	                'status' => 'error',
 	                'error' => 'invalid.credentials',
-	                'msg' => 'Invalid Credentials.'
-	            ], 400);
+					'msg' => 'Invalid Credentials.'
+				]);
+	            //], 400);
         }
         $user = new User;
         $user->email = $request->email;
@@ -50,8 +62,9 @@ class AuthController extends Controller
             'data' => $user
            ], 200);
     }
-    public function user(Request $request){
-	    $user = User::find(Auth::user()->id);
+    public function getUser(Request $request){
+	   //$user = User::find(JWTAuth::attem);
+		$user = auth()->user();
 	    return response([
 	            'status' => 'success',
 	            'data' => $user
