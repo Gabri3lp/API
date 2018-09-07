@@ -21,11 +21,12 @@ $factory->define(App\User::class, function (Faker $faker) {
         'firstName' => $faker->firstName(null),
         'lastName' => $faker->lastName,
         'city' => $faker->city,
-        'status' => $faker->randomElement($array = array ('Activo','Despedido','Reposo')),
+        'status' => $faker->randomElement($array = array ('Activo','Reposo')),
         'id' => $faker->unique()->randomNumber($nbDigits = 8),
         'address' => $faker->address,
         'phone' => $faker->phoneNumber,
         'cellphone' => $faker->tollFreePhoneNumber,
         'birthDate' => $faker->date($format = 'd-m-Y', $max = 'now'),
+        'role_id' => $faker->randomElement($array = array ('1','2','3')),
     ];
 });

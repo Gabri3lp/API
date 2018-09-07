@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         //$this->call(UsersTableSeeder::class);
         //$this->call(UserFactory::class);
-        factory(App\User::class, 100)->create();
+        factory(App\User::class, 10)->create();
         DB::table('users')->insert([
             'id' => '26770427',
             'firstName' => 'Gabriel',
@@ -26,7 +26,10 @@ class DatabaseSeeder extends Seeder
             'phone' => '13232123',
             'cellphone' => '545645',
             'birthDate' => '17/02/1997',
-        ]);/*
+            'role_id' => '1'
+        ]);
+       
+        /*
         DB::table('users')->insert([
             'id' => '26770428',
             'firstName' => 'Jesus',

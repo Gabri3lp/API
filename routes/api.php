@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-
+use App\Hour;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -12,18 +12,31 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+
 /*
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+*
+*Utilizar prefijos
+*
+*
 */
 Route::post('/login', 'AuthController@login');
+
 Route::group(['middleware' => 'jwt.auth'], function(){
-  Route::post('/signup', 'AuthController@register');
-  Route::post('get/user', 'AuthController@getUser');
-  Route::post('update/user', 'AuthController@updateUser');
-  Route::post('delete/user', 'AuthController@deleteUser');
-  Route::get('get/user/all', 'AuthController@getAllUsers');
+  //Users
+  Route::post('/signup', 'UsersController@signup');
+  Route::post('get/user', 'UsersController@getById');
+  Route::post('update/user', 'UsersController@update');
+  Route::post('delete/user', 'UsersController@delete');
+  Route::post('get/user/all', 'UsersController@getAll');
+  //Hours
+  Route::post('/create/hour', 'HoursController@create');
+  Route::post('/get/hour', 'HoursController@get');
+  Route::post('/update/hour', 'HoursController@update');
+  Route::post('/delete/hour', 'HoursController@delete');
+  Route::post('/get/hour/all', 'HoursController@getAll');
+  //Roles
+  Route::get('/get/role/all', 'RolesController@getAll');
 });
 Route::group(['middleware' => 'jwt.auth'], function(){
    Route::post('/logout', 'AuthController@logout');

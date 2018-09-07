@@ -16,7 +16,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'id', 'firstName','lastName', 'email', 'password', 'phone', 'cellphone', 'birthDate',
-        'city', 'status', 'address'
+        'city', 'status', 'address', 'hour_id', 'role_id', 'role'
     ];
 
     /**
@@ -27,4 +27,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function hour(){
+        return $this->hasMany('App\Hour');
+    }
+    public function role(){
+        return $this->belongsTo('App\Role');
+    }
 }
