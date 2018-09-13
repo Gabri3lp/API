@@ -21,27 +21,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'gabriel.jp215@gmail.com',
             'password' => bcrypt('12345678'),
             'city' => 'guayana',
-            'status' => 'Active',
+            'status' => 'Activo',
             'address' => 'Caimito',
             'phone' => '13232123',
             'cellphone' => '545645',
-            'birthDate' => '17/02/1997',
+            'birthDate' => '17-02-1997',
             'role_id' => '1'
         ]);
-       
-        /*
-        DB::table('users')->insert([
-            'id' => '26770428',
-            'firstName' => 'Jesus',
-            'lastName' => 'Arellan',
-            'email' => 'Gabri3lperez@hotmail.com',
-            'password' => bcrypt('12345678'),
-            'city' => 'guayana',
-            'status' => 'Active',
-            'address' => 'Caimito',
-            'phone' => '13232123',
-            'cellphone' => '545645',
-            'birthDate' => '17/02/1997',
-        ]);*/
+        factory(App\Hour::class, 100)->create();
+
     }
 }

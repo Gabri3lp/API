@@ -43,3 +43,4 @@ Route::group(['middleware' => 'jwt.auth'], function(){
 });
 Route::middleware('jwt.refresh')->get('/token/refresh', 'AuthController@refresh');
 
+Route::post('/report/total', 'ReportController@total');

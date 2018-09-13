@@ -69,8 +69,6 @@ class UsersController extends Controller
 		
     }
     public function getById(Request $request){
-	   	//$user = User::find(JWTAuth::attem);
-		//$user = auth()->user();
 	   	$validator = Validator::make($request->all(), [
 			'id' => 'required|string|exists:users',		
 		]);
@@ -80,7 +78,7 @@ class UsersController extends Controller
 				'msg' => $validator->messages()->all()[0]
 			]);
 		}
-		$currentUser = JWTAuth::toUser($request->token);
+		/*$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
 		if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
 			$user = User::find($currentUser['id']);
@@ -90,13 +88,12 @@ class UsersController extends Controller
 				'data' => $user
 				
 	    	]);
-		}
+		}*/
 		$user = User::find($request->id);
 		$user->role;
 	    return response([
-	            'status' => 'error',
-	            'data' => $user,
-				'msg' => $user['role']['role']
+	            'status' => 'success',
+	            'data' => $user
 	    ]);
 	}
 	public function getAll(Request $request){
@@ -111,16 +108,18 @@ class UsersController extends Controller
 		}
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
-
+		if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
+			return response([
+				'status' => 'success',
+				'data' => [$currentUser]
+			]);
+		}
 		if(array_key_exists('search', $request->all())){
 			$keys = explode(" ", $request->search);
             $users = User::query();
             if($currentUser['role']['id'] != '1'){
 				if($currentUser['role']['id'] == '2'){
 					$users = $users->where('role_id', '!=', '2')->where('role_id', '!=', '1');
-				}
-				if($currentUser['role']['id'] == '3'){
-					$users = $users->where('id', '==', $currentUser['id']);
 				}
 			}
 			$users = $users->where(function ( $query ) use($keys){
@@ -130,30 +129,12 @@ class UsersController extends Controller
                         $query->orWhere($column, 'LIKE', '%' . $key . '%');
                     }
                 }
-            })->get();
-			
-			/*
-			$query = User::query();
-			$keys = explode(" ", $request->search);
-			$columns = ['id', 'firstName', 'lastName', 'email'];
-			foreach ($keys as $key) {
-				foreach($columns as $column){
-					$query->orWhere($column, 'LIKE', '%' . $key . '%');
-				}
-			}
-			$currentUser = JWTAuth::toUser($request->token);
-			$currentUser->role;
-			if($currentUser['role']['id'] == '1'){
-				$users = $query->get();
-			}else if($)*/
+            })->orWhere("id", "=", $currentUser['id'])->get();	
 			
 		}else{
 			if($currentUser['role']['id'] != '1'){
 				if($currentUser['role']['id'] == '2'){
 					$users = $users->where('role_id', '!=', '2')->where('role_id', '!=', '1');
-				}
-				if($currentUser['role']['id'] == '3'){
-					$users = $users->where('id', '==', '1');
 				}
 			}
 			$users = $users->get();
@@ -177,6 +158,16 @@ class UsersController extends Controller
 			]);
 		}
 		$user = User::find($request->id);
+		$currentUser = JWTAuth::toUser($request->token);
+		$currentUser->role;
+		if($currentUser['role']['id'] == '3'
+			||	$currentUser['role']['id'] == '2' && ($request['role']['id'] == '2' || $request['role']['id'] == '1')
+			|| $currentUser->id == $user->id ){
+			return response([
+ 				'status' => 'error',
+				'msg' => 'No tienes permiso para borrar a este usuario'
+			]);
+		}
 		$user->delete();
 		return response([
 			'status' => 'success']);
@@ -210,17 +201,26 @@ class UsersController extends Controller
 					'msg' => $validator->messages()->all()[0]
 				]);
 		}
-		/*$currentUser = JWTAuth::toUser($request->token);
+		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
+		
 		if($currentUser['role']['id'] == '3' 
-			||	$currentUser['role']['id'] == '2' 
-			&& ($request['role']['id'] == '2'  || $request['role']['id'] == '1')){
+			||	$currentUser['role']['id'] == '2' && $request['user']['role']['id'] == '1'){
+			if($currentUser['role']['id'] == '2' && $request['user']['role']['id'] == '2'){
+				if($currentUser['id'] != $request['user']['id']){
+					return response([
+						'status' => 'error',
+						'msg' => 'No tienes permiso para crear un usuario con ese rol'
+					]);
+				}
+			}
 			return response([
 				'status' => 'error',
 				'msg' => 'No tienes permiso para crear un usuario con ese rol'
 			]);
-		}*/
-		$user = User::findOrFail($request->id);
+			
+		}
+		$user = User::find($request->id);
 		$request = $request->user;
 		$user->email = $request['email'];
         $user->id = $request['id'];

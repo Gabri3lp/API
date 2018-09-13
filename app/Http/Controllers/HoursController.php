@@ -15,14 +15,7 @@ class HoursController extends Controller
     //Todos los parámetros son requeridos.
 
   public function create(Request $request){
-      $currentUser = JWTAuth::toUser($request->token);
-      $currentUser->role;
-      if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
-        return response([
-            'status' => 'error',
-            'msg' => 'No tienes permiso para realizar esta operación'
-        ]);
-      }
+      
     $validator = Validator::make($request->all(), [
         'user_id' => 'required|string:exist:users,id',	
         'initialDate' => 'required|date_format:d-m-Y H:i',
@@ -37,6 +30,14 @@ class HoursController extends Controller
                 'msg' => $validator->messages()->all()[0]
             ]);
     }
+    $currentUser = JWTAuth::toUser($request->token);
+      $currentUser->role;
+      if($currentUser['role']['id'] == '3' && $request->user_id != $currentUser['id']){
+        return response([
+            'status' => 'error',
+            'msg' => 'No puedes agregar una hora extra de otra persona'
+        ]);
+      }
     $hour = new Hour;
     $hour->user_id = $request->user_id;
     $hour->finalDate = date('Y-m-d H:i:s',strtotime($request->finalDate));
@@ -72,8 +73,7 @@ class HoursController extends Controller
         'initialDate' => 'required|date_format:d-m-Y H:i|before:finalDate',
         'finalDate' => 'required|date_format:d-m-Y H:i',
         'description' => 'required|string',
-        'status' => 'required|string',
-       
+        'status' => 'required|string', 
     ]);
     if ($validator->fails()) {
        return response([
@@ -121,7 +121,7 @@ class HoursController extends Controller
         //Este primer validador es para verificar que se envió el id de la hora.
         //Si es correcto busca la hora extra y la devuelve
         $validator = Validator::make($request->all(), [ 'id' => 'required|string']);
-        if ($validator->fails()) {
+       /* if ($validator->fails()) {
             //Si el primer validador falla chequea si en realidad lo que se envió fue el id del usuario.
             $validator = Validator::make($request->all(), ['user_id' => 'required|string' ]);
             if ($validator->fails()) {
@@ -151,7 +151,7 @@ class HoursController extends Controller
                     ]);
             }
         }
-        else{
+        else{*/
             //Por id
                 $hour = Hour::find($request->id);
                 if($hour == null){
@@ -185,7 +185,7 @@ class HoursController extends Controller
                    
                 }
             
-            }
+         //   }
     }
     //Borra una hora extra nuevo a partir del id recibido.
     //Solo regresa 'error' con un mensaje 'msg' o  solamente 'success'  dependiento del resultado de la operación.

@@ -21,7 +21,7 @@ $factory->define(App\User::class, function (Faker $faker) {
         'firstName' => $faker->firstName(null),
         'lastName' => $faker->lastName,
         'city' => $faker->city,
-        'status' => $faker->randomElement($array = array ('Activo','Reposo')),
+        'status' => $faker->randomElement($array = array ('Activo','Inactivo')),
         'id' => $faker->unique()->randomNumber($nbDigits = 8),
         'address' => $faker->address,
         'phone' => $faker->phoneNumber,
