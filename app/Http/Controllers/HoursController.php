@@ -59,14 +59,7 @@ class HoursController extends Controller
     //Solo regresa 'error' con un mensaje 'msg' o solamente 'success' dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
   public function update(Request $request){
-    $currentUser = JWTAuth::toUser($request->token);
-    $currentUser->role;
-    if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
-      return response([
-          'status' => 'error',
-          'msg' => 'No tienes permiso para realizar esta operación'
-      ]);
-    }
+   
     $validator = Validator::make($request->all(), [
         'id' => 'required|exists:hours',
         'user_id' => 'required|string:exist:users,id',	
@@ -81,8 +74,18 @@ class HoursController extends Controller
                 'msg' => $validator->messages()->all()[0]
             ]);
     }
-
+    $currentUser = JWTAuth::toUser($request->token);
+    $currentUser->role;
     $hour = Hour::find($request->id);
+    if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
+        if($currentUser['id'] != $hour->user_id){
+            return response([
+                'status' => 'error',
+                'msg' => 'No tienes permiso para realizar esta operación'
+            ]);
+        }
+    }
+
     if($hour == null){
         return response([
            'status' => 'error',
@@ -113,46 +116,8 @@ class HoursController extends Controller
     //Solo regresa 'error' con un mensaje 'msg' o  'success' y la hora extra dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
     public function get(Request $request){
-        //Este controlador puede ser llamado tanto con el id de la hora como el id del usuario.
-        //Si es llamado con el id de la hora regresa únicamente la hora correspondiente
-        //Si es llamado con el id del usuario regresa todas las horas de dicho usuario
-
-        
-        //Este primer validador es para verificar que se envió el id de la hora.
-        //Si es correcto busca la hora extra y la devuelve
         $validator = Validator::make($request->all(), [ 'id' => 'required|string']);
-       /* if ($validator->fails()) {
-            //Si el primer validador falla chequea si en realidad lo que se envió fue el id del usuario.
-            $validator = Validator::make($request->all(), ['user_id' => 'required|string' ]);
-            if ($validator->fails()) {
-                //Si los dos fallan entonces devuelve un error
-                return response([
-                    'status' => 'error',
-                    'msg' => 'Invalid Fields.'
-                ]);
-            }else{
-                //Por usuario
-                $currentUser = JWTAuth::toUser($request->token);
-                $currentUser->role;
-                if($currentUser['role']['id'] == '3'){
-                    $user = $currentUser;
-                }else{
-                    $user = User::find($request->user_id);
-                }
-                if($user == null)
-                    return response([
-                        'status' => 'error',
-                        'msg' => 'Not found'
-                    ]);
-                $hours = $user->hour;
-                    return response([
-                        'status' => 'success',
-                        'data' => $hours
-                    ]);
-            }
-        }
-        else{*/
-            //Por id
+      
                 $hour = Hour::find($request->id);
                 if($hour == null){
                     return response([
@@ -184,21 +149,12 @@ class HoursController extends Controller
                     }
                    
                 }
-            
-         //   }
     }
     //Borra una hora extra nuevo a partir del id recibido.
     //Solo regresa 'error' con un mensaje 'msg' o  solamente 'success'  dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
     public function delete(Request $request){
-        $currentUser = JWTAuth::toUser($request->token);
-        $currentUser->role;
-        if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
-            return response([
-                'status' => 'error',
-                'msg' => 'No tienes permiso para realizar esta operación'
-            ]);
-          }
+       
         //Validar parametros
         $validator = Validator::make($request->all(), ['id' => 'required']);
             if ($validator->fails()) {
@@ -207,7 +163,18 @@ class HoursController extends Controller
                         'msg' => 'Invalid Fields.'
                     ]);
             }
+        
+        $currentUser = JWTAuth::toUser($request->token);
+        $currentUser->role;
         $hour = Hour::find($request->id);
+        if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
+            if($currentUser['id'] != $hour->user_id){
+                return response([
+                    'status' => 'error',
+                    'msg' => 'No tienes permiso para realizar esta operación'
+                ]);
+            }
+        }
         if($hour == null)
             return response([
                 'status' => 'error',

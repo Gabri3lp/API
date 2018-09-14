@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'birthDate' => '17-02-1997',
             'role_id' => '1'
         ]);
-        factory(App\Hour::class, 100)->create();
+        factory(App\Hour::class, 50)->create();
 
     }
 }

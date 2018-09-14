@@ -22,10 +22,10 @@ class ReportController extends Controller
         }
        
         $begin = date('Y-m-d',strtotime($request->initialDate));
-        if(!array_key_exists('finalDate', $request)){
-            $end = $begin;
-        }else{
+        if(array_key_exists('finalDate', $request )){
             $end = date('Y-m-d',strtotime($request->finalDate));
+        }else{
+            $end = $begin;
         }
         $query = DB::select(
             DB::raw("SELECT u.firstName AS FirstName, u.lastName AS LastName, SUM(h.total) AS Total
@@ -42,7 +42,7 @@ class ReportController extends Controller
         
         return  $pdf->download('Report.pdf');   
     }
-
+/*
     public function detailed(Request $request){
         $validator = Validator::make($request->all(), [	
             'initialDate' => 'required|date_format:d-m-Y|before_or_equal:finalDate',
@@ -75,5 +75,5 @@ class ReportController extends Controller
         'total' => $total, 'begin' => $begin, 'end' => $end]);
         
         return  $pdf->download('Report.pdf');  
-    }
+    }*/
 }

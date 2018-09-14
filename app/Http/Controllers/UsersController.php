@@ -9,10 +9,12 @@ use App\User;
 use Validator;
 class UsersController extends Controller
 {
-     /*$messages = [
-		'required' => 'El campo :attribute es requerido.',
-		'date' => 'La fecha :attribute no es válida.',
-	];*/
+    public function currentUser(){
+		$user = auth()->user();
+		return response([
+			'data' => $user
+		]);
+	}
 	public function signup(Request $request){
 		$validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users',	
@@ -35,7 +37,6 @@ class UsersController extends Controller
 	                'status' => 'error',
 					'msg' => $validator->messages()->all()[0]
 				]);
-	            //], 400);
 		}
 		
 		$currentUser = JWTAuth::toUser($request->token);
@@ -78,7 +79,7 @@ class UsersController extends Controller
 				'msg' => $validator->messages()->all()[0]
 			]);
 		}
-		/*$currentUser = JWTAuth::toUser($request->token);
+		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
 		if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
 			$user = User::find($currentUser['id']);
@@ -88,7 +89,7 @@ class UsersController extends Controller
 				'data' => $user
 				
 	    	]);
-		}*/
+		}
 		$user = User::find($request->id);
 		$user->role;
 	    return response([
