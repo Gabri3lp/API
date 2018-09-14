@@ -9,12 +9,15 @@ use App\User;
 use Validator;
 class UsersController extends Controller
 {
+	//Funcion que regresa el usuario actual que está autenticado
     public function currentUser(){
 		$user = auth()->user();
 		return response([
 			'data' => $user
 		]);
 	}
+
+	//Funcion que registra nuevos usuarios
 	public function signup(Request $request){
 		$validator = Validator::make($request->all(), [
             'email' => 'required|email|unique:users',	
@@ -38,7 +41,8 @@ class UsersController extends Controller
 					'msg' => $validator->messages()->all()[0]
 				]);
 		}
-		
+		//En segmente se comprueba el rol del usuario actual y verifica si tiene permisos.
+		//Si no tiene le regresa un mensaje de error.
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
 		if($currentUser['role']['id'] == '3' 
@@ -68,7 +72,8 @@ class UsersController extends Controller
             'data' => $user
 		   ], 200);
 		
-    }
+	}
+	//Funcion para obtener un usuario por us ID
     public function getById(Request $request){
 	   	$validator = Validator::make($request->all(), [
 			'id' => 'required|string|exists:users',		
@@ -79,6 +84,7 @@ class UsersController extends Controller
 				'msg' => $validator->messages()->all()[0]
 			]);
 		}
+		//Se comprueba si el usuario tiene los permisos necesarios
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
 		if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
@@ -97,6 +103,7 @@ class UsersController extends Controller
 	            'data' => $user
 	    ]);
 	}
+	//Regresa todos los usuarios
 	public function getAll(Request $request){
 		$validator = Validator::make($request->all(), [
 			'search' => 'nullable|string',		
@@ -107,6 +114,7 @@ class UsersController extends Controller
 				'msg' => $validator->messages()->all()[0]
 			]);
 		}
+		//Si no es un admin o un super admin nada mas devuelve su propio usuario.
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
 		if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
@@ -115,9 +123,12 @@ class UsersController extends Controller
 				'data' => [$currentUser]
 			]);
 		}
+        //Si se tiene el parametro de búsqueda y no está vacio genera un query de búsqueda
 		if(array_key_exists('search', $request->all())){
+			//Si se tiene un parametro de búsqueda ejecuta esta parte del códugo
 			$keys = explode(" ", $request->search);
             $users = User::query();
+            //Si es un admin, devuelve los usuarios que no sean ni Admin ni SuperAdmin.
             if($currentUser['role']['id'] != '1'){
 				if($currentUser['role']['id'] == '2'){
 					$users = $users->where('role_id', '!=', '2')->where('role_id', '!=', '1');
@@ -129,7 +140,8 @@ class UsersController extends Controller
                     foreach($columns as $column){
                         $query->orWhere($column, 'LIKE', '%' . $key . '%');
                     }
-                }
+				}
+				//En esta parte el query siempre trata de incluir el propio usuario.
             })->orWhere("id", "=", $currentUser['id'])->get();	
 			
 		}else{
@@ -148,6 +160,8 @@ class UsersController extends Controller
 			'data' => $users
 		]);
 	}
+
+	//Funcion para borrar un usuario
 	public function delete(Request $request){
 		$validator = Validator::make($request->all(), [
 			'id' => 'required|exists:users'
@@ -158,6 +172,7 @@ class UsersController extends Controller
 				'msg' => $validator->messages()->all()[0]
 			]);
 		}
+		//Aquí comprueba si el usuario tiene permisos de borrar dicho usuario. Nunca se puede borrar tu propio usuario.
 		$user = User::find($request->id);
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
@@ -173,13 +188,14 @@ class UsersController extends Controller
 		return response([
 			'status' => 'success']);
 	}
+	//Funcion de actualizar un usuario
 	public function update(Request $request){
 		$validator = Validator::make($request->all(), [
 			'id' => 'required|string|exists:users',
             'user.email'=> [
 				'required',
-				Rule::unique('users', 'email')->ignore($request->id),
-			],	
+				Rule::unique('users', 'email')->ignore($request->id), //El email debe ser nuevo entre los usuarios,
+			],														  //a menos de que sea el tuyo sin modificar.
             'user.password' => 'nullable|string|min:6|max:10',
 			'user.id' => [
 				'required',
@@ -204,7 +220,7 @@ class UsersController extends Controller
 		}
 		$currentUser = JWTAuth::toUser($request->token);
 		$currentUser->role;
-		
+		//Se verifica si tienes permiso para modificar este usuario
 		if($currentUser['role']['id'] == '3' 
 			||	$currentUser['role']['id'] == '2' && $request['user']['role']['id'] == '1'){
 			if($currentUser['role']['id'] == '2' && $request['user']['role']['id'] == '2'){
@@ -238,14 +254,7 @@ class UsersController extends Controller
 		$user->status = $request['status'];
 		$user->address = $request['address'];
 		$user->role_id = $request['role']['id'];
-		try{
-			$user->save();
-		}catch(\Exception $e){
-			return response([
-	            'status' => 'error',
-	            'msg' => 'Database error'
-	    	]);
-		}
+		$user->save();
 
         return response([
             'status' => 'success'

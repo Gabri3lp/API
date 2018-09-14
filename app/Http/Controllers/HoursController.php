@@ -13,7 +13,6 @@ class HoursController extends Controller
     //Crea una hora extra nuevo a partir de los datos recibidos.
     //Solo regresa 'error' con un mensaje 'msg' o solamente 'success' dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
-
   public function create(Request $request){
       
     $validator = Validator::make($request->all(), [
@@ -59,7 +58,6 @@ class HoursController extends Controller
     //Solo regresa 'error' con un mensaje 'msg' o solamente 'success' dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
   public function update(Request $request){
-   
     $validator = Validator::make($request->all(), [
         'id' => 'required|exists:hours',
         'user_id' => 'required|string:exist:users,id',	
@@ -154,8 +152,6 @@ class HoursController extends Controller
     //Solo regresa 'error' con un mensaje 'msg' o  solamente 'success'  dependiento del resultado de la operación.
     //Todos los parámetros son requeridos.
     public function delete(Request $request){
-       
-        //Validar parametros
         $validator = Validator::make($request->all(), ['id' => 'required']);
             if ($validator->fails()) {
             return response([
@@ -208,13 +204,18 @@ class HoursController extends Controller
         }
         $currentUser = JWTAuth::toUser($request->token);
         $currentUser->role;
+        //Si se tiene el parametro de búsqueda y no está vacio genera un query de búsqueda
 		if(array_key_exists('search', $request->all()) && $request['search'] != ''){
+            //Se separa cada palabra de la búsqueda.
             $keys = explode(" ", $request->search);
             $hours = Hour::query();
+            //Si no es un SuperAdmin (1) o Admin(2) entonces nada mas puede buscar las horas de su propio usuario.
             if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2')
                 $hours = $hours->where('user_id', '=', $currentUser['id']);
             $hours = $hours->where(function ( $query ) use($keys){
                 $columns = ['id', 'user_id', 'initialDate', 'finalDate', 'status'];
+                //Si tiene permiso de buscar en todos los usuarios entonces recorre cada columna de busqueda
+                //Y busca cualquier coincidencia de cualquier palabra de la búsqueda.
                 foreach ($keys as $key) {
                     foreach($columns as $column){
                         $query->orWhere($column, 'LIKE', '%' . $key . '%');
@@ -222,13 +223,15 @@ class HoursController extends Controller
                 }
             })->get();
 		}else{
+            //En este caso no se tiene el parámetro de búsqueda por lo que si es un usuario se regresa a si mismo nada mas
+            //Si es un admin o un super admin pide todas las horas extra de la base de datos
             if($currentUser['role']['id'] != '1' && $currentUser['role']['id'] != '2'){
                 $hours = Hour::query()->where('user_id', '=', $currentUser['id'])->get();
             }else{
                 $hours = Hour::get();
             }
         }
-        
+        //Regresa el resultado.
         return response([
             'status' => 'success',
             'data' => $hours
