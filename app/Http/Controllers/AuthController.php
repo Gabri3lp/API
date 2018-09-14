@@ -10,14 +10,16 @@ use App\Http\Requests\RegisterFormRequest;
 
 class AuthController extends Controller
 {
+	//Peticion de loggeo. Se necesita el Email y la contraseña y se regresa un mensaje con el estatus y la info
+	//Si el estado es Success se regresa el toke
+	//Si el estado es Error se regresa un mensaje con el error.
     public function login(Request $request){
 	    $credentials = $request->only('email', 'password');
 	    $token = JWTAuth::attempt($credentials);
 	    if ( ! $token = JWTAuth::attempt($credentials)) {
 	            return response([
 	                'status' => 'error',
-	                'error' => 'invalid.credentials',
-	                'message' => 'Invalid Credentials'
+	                'msg' => 'Credenciales Inválidas'
 	            ]);
 	    }
 	    return response([
@@ -26,38 +28,7 @@ class AuthController extends Controller
 	        ]);
 	}
 
-	public function register(Request $request){
-		 $validator = Validator::make($request->all(), [
-		 	'name' => 'required|string|unique:users',
-            'email' => 'required|email|unique:users',	
-            'password' => 'required|string|min:6|max:10'
-        ]);
-
-        if ($validator->fails()) {
-           return response([
-	                'status' => 'error',
-	                'error' => 'invalid.credentials',
-	                'msg' => 'Invalid Credentials.'
-	            ], 400);
-        }
-        $user = new User;
-        $user->email = $request->email;
-        $user->name = $request->name;
-        $user->password = bcrypt($request->password);
-        $user->save();
-        return response([
-            'status' => 'success',
-            'data' => $user
-           ], 200);
-    }
-    public function user(Request $request){
-	    $user = User::find(Auth::user()->id);
-	    return response([
-	            'status' => 'success',
-	            'data' => $user
-	        ]);
-	}
-
+	//Funcion para cerrar sesión e invalidar el token
 	public function logout(){
 	    JWTAuth::invalidate();
 	    return response([
@@ -66,9 +37,13 @@ class AuthController extends Controller
 	        ], 200);
 	}
 
+	//Funcion para refrescar el token. Toma el antiguo token y genera uno nuevo, luego lo regresa.
 	public function refresh(){
+		$token = JWTAuth::getToken();
+		$newToken = JWTAuth::refresh($token);
         return response([
-         'status' => 'success'
+		 'status' => 'success',
+		 'data' => $newToken
         ]);
     }
 }
